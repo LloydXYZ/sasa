@@ -1,0 +1,12 @@
+<?php require __DIR__.'/../backend/config.php';$s=$pdo->prepare('SELECT * FROM cottages WHERE id=?');$s->execute([(int)($_GET['id']??0)]);$x=$s->fetch();if(!$x){header('Location: cottages.php');exit;}
+$pk=$_SESSION['pick']??[];
+if($_SERVER['REQUEST_METHOD']=='POST'&&$x['status']=='available'&&preg_match('/^\d{4}-\d\d-\d\d$/',$_POST['date']??'')&&in_array($_POST['type']??'',['day','overnight'])){$_SESSION['pick']=['c'=>$x['id'],'date'=>$_POST['date'],'type'=>$_POST['type']];header('Location: reserve.php');exit;}
+$title=cname($x).' – Sasa Beach Resort';include 'inc/header.php';$ty=$pk['type']??'day';?>
+<section><div class="wrap"><p><a href="cottages.php#choose">← All cottages</a></p><div class="det"><img src="<?=e(cimg($x))?>" alt="<?=e(cname($x))?>"><div><h2><?=e(cname($x))?></h2><p><?=e($x['description'])?></p>
+<p class="price">₱<?=number_format($x['price'])?> <small>day use</small> · ₱<?=number_format($x['price']*mult())?> <small>overnight</small></p><p><b>Capacity:</b> up to <?=$x['capacity']?> people</p>
+<ul class="chips"><?php foreach(array_filter(array_map('trim',explode(',',$x['amenities']))) as $a)echo '<li>'.e($a).'</li>';?></ul>
+<?php if($x['status']!='available'):?><p class="err">This cottage is under maintenance.</p><?php else:?>
+<form method="post"><label>Date<input type="date" id="date" name="date" min="<?=date('Y-m-d')?>" required value="<?=e($pk['date']??'')?>"></label><label>Stay type<select name="type" id="type"><option value="day">Day use</option><option value="overnight" <?=$ty=='overnight'?'selected':''?>>Overnight</option></select></label>
+<div class="note" id="av">Pick a date to see availability.</div><div class="row"><button class="btn" id="go">Book this cottage</button><a class="btn alt" style="background:var(--sea)" href="cottages.php#choose">Choose another</a></div></form>
+<script>const id=<?=$x['id']?>,$=i=>document.getElementById(i);async function chk(){const o=$('av');if(!$('date').value){o.textContent='Pick a date to see availability.';return}const r=await(await fetch('availability.php?date='+$('date').value+'&type='+$('type').value)).json(),bad=r.includes(id);o.className='note'+(bad?' err':'');o.textContent=bad?'Already booked for that date and stay type.':'Available on that date.';$('go').disabled=bad}
+$('date').onchange=$('type').onchange=chk;chk();</script><?php endif;?></div></div></div></section><?php include 'inc/footer.php';

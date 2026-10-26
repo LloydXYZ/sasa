@@ -1,0 +1,4 @@
+<?php $title='Cottages & Rates – Sasa Beach Resort'; include 'inc/header.php'; $c=$pdo->query('SELECT * FROM cottages ORDER BY cottage_no')->fetchAll();?>
+<section id="choose"><div class="wrap"><h2>Choose your cottage</h2><p>Overnight is <?=mult()?>× the day rate. Entrance is ₱<?=e(setting('entrance_fee'))?> per person if you are not using a cottage. Tap a cottage to see its details and reserve.</p><div class="cols">
+<?php foreach($c as $x):?><a class="card" href="cottage.php?id=<?=$x['id']?>"><img src="<?=e(cimg($x))?>" alt="<?=e(cname($x))?>"><div><h3><?=e(cname($x))?></h3><p class="price">₱<?=number_format($x['price'])?> <small>day</small> · ₱<?=number_format($x['price']*mult())?> <small>overnight</small></p><?=$x['status']=='available'?'<b>View details &amp; reserve →</b>':'<span class="pill">Under maintenance</span>'?></div></a><?php endforeach;?>
+</div></div></section><?php include 'inc/footer.php';
