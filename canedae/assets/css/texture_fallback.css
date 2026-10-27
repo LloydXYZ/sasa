@@ -1,0 +1,44 @@
+/* 
+   linen_texture_override.css
+   Fallback when linen_texture.png is not present.
+   The body background uses a CSS-based linen effect.
+*/
+body {
+  background-color: #e8dcc8;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.015) 2px,
+      rgba(0, 0, 0, 0.015) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.01) 3px,
+      rgba(0, 0, 0, 0.01) 6px
+    );
+}
+
+.navbar,
+.modal-box,
+.auth-page,
+.about-page {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.012) 2px,
+      rgba(0, 0, 0, 0.012) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.008) 3px,
+      rgba(0, 0, 0, 0.008) 6px
+    );
+}
