@@ -1,0 +1,1459 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Agricultural MIS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #f1f7ee;
+        --cd: #fff;
+        --tx: #143a20;
+        --mu: #5d7a63;
+        --pr: #2e7d3a;
+        --p2: #1b5a28;
+        --lt: #e3f1dd;
+        --bd: #d3e5cc;
+        --rd: #b42318;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #0e1a11;
+          --cd: #15261a;
+          --tx: #e3f1e2;
+          --mu: #9bb8a1;
+          --pr: #4fae5c;
+          --p2: #a6dfa9;
+          --lt: #1e3a25;
+          --bd: #2a4331;
+          --rd: #ff8a7a;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #0e1a11;
+        --cd: #15261a;
+        --tx: #e3f1e2;
+        --mu: #9bb8a1;
+        --pr: #4fae5c;
+        --p2: #a6dfa9;
+        --lt: #1e3a25;
+        --bd: #2a4331;
+        --rd: #ff8a7a;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--tx);
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        min-height: 100dvh;
+      }
+      .side {
+        background: linear-gradient(180deg, #1f6a2d, #0d3a19);
+        color: #e8f5e4;
+        padding: 18px 12px;
+        position: sticky;
+        top: 0;
+        height: 100dvh;
+        overflow: auto;
+        box-sizing: border-box;
+      }
+      .brand {
+        font-weight: 700;
+        font-size: 18px;
+        padding: 4px 10px 16px;
+      }
+      .nv {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        color: #cfe8c9;
+        font-size: 14px;
+      }
+      .nv:hover {
+        background: #ffffff1a;
+      }
+      .nv.on {
+        background: #e3f1dd;
+        color: #14401f;
+        font-weight: 600;
+      }
+      .nv.hd {
+        cursor: default;
+        color: #fff;
+        font-weight: 600;
+      }
+      .nv.hd:hover {
+        background: 0;
+      }
+      .sub {
+        margin-left: 28px;
+        font-size: 13px;
+        padding: 7px 12px;
+      }
+      main {
+        padding: 20px 26px;
+        min-width: 0;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .top h2 {
+        margin: 0;
+        display: inline;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      .c {
+        background: var(--cd);
+        border: 1px solid var(--bd);
+        border-radius: 16px;
+        padding: 14px 16px;
+      }
+      .kc {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .ic {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--lt);
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+      }
+      .kc b {
+        display: block;
+        font-size: 19px;
+      }
+      .kc span {
+        font-size: 12px;
+        color: var(--mu);
+      }
+      .gr {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+        gap: 14px;
+      }
+      .gr .c {
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+      }
+      .gr h4 {
+        margin: 0 0 8px;
+      }
+      .cw {
+        flex: 1;
+        position: relative;
+        min-height: 0;
+      }
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 12px;
+      }
+      input,
+      select {
+        padding: 9px 11px;
+        border: 1px solid var(--bd);
+        border-radius: 10px;
+        background: var(--cd);
+        color: var(--tx);
+        font: inherit;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      .btn {
+        background: var(--pr);
+        color: #fff;
+        border: 0;
+        border-radius: 10px;
+        padding: 9px 16px;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 600;
+      }
+      .btn:hover {
+        filter: brightness(0.9);
+      }
+      .btn.gh {
+        background: var(--lt);
+        color: var(--p2);
+      }
+      .btn.sm {
+        padding: 4px 9px;
+        font-size: 12px;
+      }
+      .btn.dn {
+        background: #fde8e6;
+        color: #b42318;
+      }
+      .tw {
+        overflow: auto;
+        max-height: 560px;
+        border: 1px solid var(--bd);
+        border-radius: 14px;
+        background: var(--cd);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13px;
+      }
+      th {
+        position: sticky;
+        top: 0;
+        background: var(--lt);
+        color: var(--p2);
+        text-align: left;
+        padding: 10px;
+        white-space: nowrap;
+      }
+      td {
+        padding: 9px 10px;
+        border-top: 1px solid var(--bd);
+        white-space: nowrap;
+      }
+      tr:hover td {
+        background: var(--lt);
+      }
+      .tag {
+        padding: 2px 9px;
+        border-radius: 99px;
+        font-size: 11px;
+        background: var(--lt);
+        color: var(--p2);
+      }
+      .tag.off {
+        background: #fde8e6;
+        color: #b42318;
+      }
+      .mo {
+        position: fixed;
+        inset: 0;
+        background: #0008;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        z-index: 9;
+      }
+      .md {
+        background: var(--cd);
+        border-radius: 18px;
+        padding: 22px;
+        width: 100%;
+        max-height: 90%;
+        overflow: auto;
+        position: relative;
+        box-sizing: border-box;
+      }
+      .cl {
+        position: absolute;
+        right: 12px;
+        top: 10px;
+        background: 0;
+        border: 0;
+        color: var(--tx);
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .g2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .err {
+        color: var(--rd);
+        font-weight: 400;
+        min-height: 14px;
+        font-size: 12px;
+      }
+      .calc {
+        display: flex;
+        gap: 14px;
+        margin: 14px 0;
+        flex-wrap: wrap;
+      }
+      .calc div {
+        background: var(--lt);
+        border-radius: 12px;
+        padding: 10px 16px;
+        flex: 1;
+        font-size: 13px;
+      }
+      .calc b {
+        font-size: 18px;
+      }
+      .acts {
+        display: flex;
+        gap: 10px;
+      }
+      .mu {
+        color: var(--mu);
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1b5a28;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 12px;
+        z-index: 99;
+      }
+      .lg {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        min-height: 100dvh;
+      }
+      .hero {
+        background:
+          radial-gradient(circle at 20% 90%, #3f9a4d55, transparent 50%),
+          linear-gradient(160deg, #1f6a2d, #0d3a19 70%);
+        color: #fff;
+        padding: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 14px;
+      }
+      .pill {
+        display: inline-block;
+        background: #ffffff22;
+        border-radius: 99px;
+        padding: 5px 14px;
+        margin: 0 6px 6px 0;
+        font-size: 13px;
+      }
+      .lf {
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      .lf form {
+        width: 100%;
+        max-width: 360px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      @media (max-width: 800px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .side {
+          position: fixed;
+          left: -270px;
+          width: 250px;
+          z-index: 5;
+          transition: left 0.2s;
+        }
+        .side.open {
+          left: 0;
+        }
+        .lg {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding: 28px;
+        }
+        main {
+          padding: 16px;
+        }
+      }
+      @media (min-width: 801px) {
+        #mb {
+          display: none;
+        }
+      }
+      @media print {
+        .side,
+        .top,
+        .no {
+          display: none !important;
+        }
+        .app {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      const $ = (s) => document.querySelector(s),
+        fmt = (n) =>
+          (+n).toLocaleString(undefined, { maximumFractionDigits: 2 }),
+        peso = (n) => "₱" + fmt(n),
+        mil = (n) => (n >= 1e6 ? "₱" + fmt(n / 1e6) + "M" : peso(n));
+      const MO = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ],
+        M6 = MO.slice(0, 6),
+        R = (n) => Math.round(n * 10) / 10;
+      let sd = 7;
+      const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+      const BN = [
+          "San Jose",
+          "San Miguel",
+          "San Isidro",
+          "San Antonio",
+          "Poblacion",
+        ],
+        G = ["#2e7d3a", "#e0a82e", "#7cc36e", "#3b82a0", "#a3623a"];
+      const CD = [
+        ["Rice", "Palay", "NSIC Rc222", "Irrigated", 4.4, 22],
+        ["Rice", "Palay", "Other Rice Varieties", "Rainfed", 3.6, 21],
+        ["Corn", "Yellow Corn", "Pioneer Hybrid", "Upland", 5.2, 14],
+        ["HVC", "Vegetables", "Ampalaya", "Lowland", 10.5, 38],
+        ["HVC", "Fruits", "Lakatan Banana", "Upland", 14, 26],
+      ];
+      const RM = [
+        "Good harvest",
+        "Normal yield",
+        "Slight pest damage",
+        "Affected by dry spell",
+        "Above target",
+        "Delayed planting",
+      ];
+      const D = {
+        recs: [],
+        far: [],
+        brg: BN.map((n, i) => ({
+          id: i + 1,
+          name: n,
+          user: [
+            "Juan Dela Cruz",
+            "Pedro Santos",
+            "Maria Reyes",
+            "Ana Lopez",
+            "Ramon Garcia",
+          ][i],
+          st: "Active",
+        })),
+        crops: [
+          ["Rice", "Palay"],
+          ["Rice", "NSIC Rc222"],
+          ["Rice", "Other Rice Varieties"],
+          ["Corn", "Yellow Corn"],
+          ["Corn", "White Corn"],
+          ["HVC", "Vegetables"],
+          ["HVC", "Fruits"],
+          ["HVC", "Root Crops"],
+          ["HVC", "Other HVC"],
+        ].map((c, i) => ({
+          id: i + 1,
+          cat: c[0],
+          name: c[1],
+          st: i == 4 ? "Inactive" : "Active",
+        })),
+        users: [
+          ["Elena Mercado", "admin", "Admin", "—"],
+          ["Juan Dela Cruz", "barangay", "Barangay User", "San Jose"],
+          ["Pedro Santos", "psantos", "Barangay User", "San Miguel"],
+          ["Maria Reyes", "mreyes", "Barangay User", "San Isidro"],
+          ["Ana Lopez", "alopez", "Barangay User", "San Antonio"],
+          ["Ramon Garcia", "rgarcia", "Barangay User", "Poblacion"],
+        ].map((u, i) => ({
+          id: i + 1,
+          name: u[0],
+          un: u[1],
+          role: u[2],
+          brgy: u[3],
+          st: i == 5 ? "Inactive" : "Active",
+        })),
+      };
+      let rid = 1;
+      [].forEach((b, bi) =>
+        CD.forEach((c) => {
+          const k = [1, 0.8, 0.9, 0.7, 0.55][bi];
+          for (let m = 0; m < 6; m++) {
+            const pl = R(((c[0] == "HVC" ? 12 : 34) + rnd() * 22) * k),
+              hv = R(pl * (0.88 + rnd() * 0.1)),
+              pr = R(hv * c[4] * (0.9 + rnd() * 0.2));
+            D.recs.push({
+              id: rid++,
+              brgy: b,
+              mo: MO[m],
+              yr: 2026,
+              cat: c[0],
+              crop: c[1],
+              vr: c[2],
+              eco: c[3],
+              pl,
+              fm: Math.round(pl * 1.3),
+              hv,
+              pr,
+              un: "tons",
+              pp: R(c[5] * (0.93 + rnd() * 0.1 + m * 0.012)),
+              rm: RM[Math.floor(rnd() * 6)],
+            });
+          }
+        }),
+      );
+      const FN = [
+          "Juan",
+          "Pedro",
+          "Maria",
+          "Jose",
+          "Ana",
+          "Ramon",
+          "Elena",
+          "Carlo",
+          "Liza",
+          "Mario",
+          "Rosa",
+          "Dante",
+        ],
+        LN = [
+          "Dela Cruz",
+          "Santos",
+          "Reyes",
+          "Garcia",
+          "Bautista",
+          "Ramos",
+          "Mendoza",
+          "Aquino",
+          "Flores",
+          "Villanueva",
+        ];
+      for (let i = 0; i < 60; i++)
+        D.far.push({
+          id: i + 1,
+          name: FN[i % 12] + " " + LN[(i * 7 + 3) % 10],
+          brgy: BN[i % 5],
+          contact: "09" + (170000000 + Math.floor(rnd() * 8e7)),
+          crop: ["Palay", "Yellow Corn", "Vegetables", "Fruits"][(i * 3) % 4],
+          area: R(0.5 + rnd() * 3.5),
+          st: i % 9 == 4 ? "Inactive" : "Active",
+        });
+      D.far.forEach((f, i) => {
+        const c =
+          f.crop == "Palay"
+            ? CD[i % 2]
+            : f.crop == "Yellow Corn"
+              ? CD[2]
+              : f.crop == "Vegetables"
+                ? CD[3]
+                : CD[4];
+        (i % 2 ? [1, 3, 5] : [0, 2, 4]).forEach((m) => {
+          const pl = R(f.area * (0.85 + rnd() * 0.15)),
+            hv = R(pl * (0.9 + rnd() * 0.08)),
+            pr = R(hv * c[4] * (0.9 + rnd() * 0.2));
+          D.recs.push({
+            id: rid++,
+            farmer: f.name,
+            brgy: f.brgy,
+            mo: MO[m],
+            yr: 2026,
+            cat: c[0],
+            crop: c[1],
+            vr: c[2],
+            eco: c[3],
+            pl,
+            fm: 1,
+            hv,
+            pr,
+            un: "tons",
+            pp: R(c[5] * (0.93 + rnd() * 0.1 + m * 0.012)),
+            rm: RM[Math.floor(rnd() * 6)],
+          });
+        });
+      });
+      const S = { u: null, p: "dash", admin: false },
+        scope = () =>
+          S.admin ? D.recs : D.recs.filter((r) => r.brgy == S.u.brgy),
+        myFar = () =>
+          S.admin ? D.far : D.far.filter((f) => f.brgy == S.u.brgy);
+      const tn = (r) => (r.un == "kg" ? r.pr / 1000 : r.pr),
+        val = (r) => r.pr * (r.un == "tons" ? 1000 : 1) * r.pp,
+        yl = (r) => (r.hv ? tn(r) / r.hv : 0),
+        tag = (s) =>
+          `<span class="tag ${s == "Inactive" ? "off" : ""}">${s}</span>`;
+      const agg = (rs) => {
+        const a = { n: rs.length, pl: 0, hv: 0, pr: 0, fm: 0, val: 0, pp: 0 };
+        rs.forEach((r) => {
+          a.pl += r.pl;
+          a.hv += r.hv;
+          a.pr += tn(r);
+          a.fm += r.fm;
+          a.val += val(r);
+          a.pp += r.pp;
+        });
+        a.y = a.hv ? a.pr / a.hv : 0;
+        a.pp = a.n ? a.pp / a.n : 0;
+        a.fm = new Set(rs.map((r) => r.farmer || r.id)).size;
+        return a;
+      };
+      const gp = (rs, kf) => {
+        const m = {};
+        rs.forEach((r) => (m[kf(r)] = m[kf(r)] || []).push(r));
+        return Object.values(m).map((g) => ({ r: g[0], a: agg(g) }));
+      };
+      const by = (rs, kf) => {
+        const m = {};
+        rs.forEach((r) => (m[kf(r)] = (m[kf(r)] || 0) + tn(r)));
+        return m;
+      };
+      const kc = (a) =>
+        a
+          .map(
+            (x) =>
+              `<div class="c kc"><div class="ic">${x[0]}</div><div><b>${x[2]}</b><span>${x[1]}</span></div></div>`,
+          )
+          .join("");
+      const CH = {};
+      function ch(id, type, labels, sets) {
+        CH[id]?.destroy();
+        CH[id] = new Chart(document.getElementById(id), {
+          type,
+          data: { labels, datasets: sets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: sets.length > 1 || type == "doughnut" },
+            },
+          },
+        });
+      }
+      function toast(t) {
+        const d = document.createElement("div");
+        d.className = "toast";
+        d.textContent = t;
+        document.body.append(d);
+        setTimeout(() => d.remove(), 2200);
+      }
+      function modal(h, w) {
+        const m = document.createElement("div");
+        m.className = "mo";
+        m.innerHTML = `<div class="md" style="max-width:${w || 640}px"><button class="cl" data-x>✕</button>${h}</div>`;
+        m.onclick = (e) => {
+          if (e.target == m || e.target.dataset.x != null) m.remove();
+          else if (e.target.dataset.fa) {
+            const [a, id] = e.target.dataset.fa.split(":");
+            farmerAct(+id, a);
+          }
+        };
+        document.body.append(m);
+        return m;
+      }
+      /* forms */
+      const sel = (k, l, o, x = {}) => ({ k, l, t: "select", o, req: 1, ...x }),
+        num = (k, l) => ({ k, l, t: "number", req: 1 }),
+        txt = (k, l, req = 1) => ({ k, l, req }),
+        bn = () => (S.admin ? D.brg.map((b) => b.name) : [S.u.brgy]);
+      function formHTML(c, r, ro) {
+        return `<form id="fm" novalidate><div class="g2">${c.fields
+          .map((f) => {
+            const o = typeof f.o == "function" ? f.o() : f.o;
+            return `<label>${f.l}${f.req ? " *" : ""}${f.t == "select" ? `<select name="${f.k}" ${ro ? "disabled" : ""}>${o.map((x) => `<option ${r && r[f.k] == x ? "selected" : ""}>${x}</option>`).join("")}</select>` : `<input name="${f.k}" inputmode="${f.t == "number" ? "decimal" : "text"}" value="${r ? r[f.k] : ""}" ${ro ? "readonly" : ""}>`}<span class="err" data-e="${f.k}"></span></label>`;
+          })
+          .join(
+            "",
+          )}</div>${c.calc ? '<div class="calc" id="cc"></div>' : ""}${ro ? "" : '<div class="acts"><button class="btn">Save</button><button type="button" class="btn gh" data-x>Cancel</button></div>'}</form>`;
+      }
+      function bindF(root, c, done) {
+        const fm = root.querySelector("#fm"),
+          E = (k) => fm.elements[k],
+          vals = () =>
+            Object.fromEntries(c.fields.map((f) => [f.k, E(f.k).value.trim()]));
+        const sync = () => {
+          if (E("farmer") && E("brgy")) {
+            const fc = E("farmer").value;
+            E("farmer").innerHTML = D.far
+              .filter((x) => x.brgy == E("brgy").value)
+              .map(
+                (x) =>
+                  `<option ${x.name == fc ? "selected" : ""}>${x.name}</option>`,
+              )
+              .join("");
+          }
+          if (!E("cat") || !E("crop")) return;
+          const cur = E("crop").value;
+          E("crop").innerHTML = D.crops
+            .filter((x) => x.cat == E("cat").value && x.st == "Active")
+            .map(
+              (x) =>
+                `<option ${x.name == cur ? "selected" : ""}>${x.name}</option>`,
+            )
+            .join("");
+        };
+        const upd = () => {
+          if (!c.calc) return;
+          const v = vals(),
+            o = { hv: +v.hv || 0, pr: +v.pr || 0, pp: +v.pp || 0, un: v.un };
+          root.querySelector("#cc").innerHTML =
+            `<div>Yield per Hectare<br><b>${fmt(yl(o))} tons/ha</b></div><div>Estimated Production Value<br><b>${peso(val(o))}</b></div>`;
+        };
+        fm.oninput = upd;
+        fm.onchange = (e) => {
+          if (e.target.name == "cat" || e.target.name == "brgy") sync();
+          upd();
+        };
+        sync();
+        upd();
+        fm.onsubmit = (e) => {
+          e.preventDefault();
+          const v = vals(),
+            er = {};
+          c.fields.forEach((f) => {
+            const x = v[f.k];
+            if (f.req && x === "") er[f.k] = "This field is required";
+            else if (f.t == "number" && x !== "") {
+              if (isNaN(+x)) er[f.k] = "Enter a valid number";
+              else if (+x < 0) er[f.k] = "Cannot be negative";
+            }
+          });
+          if (!Object.keys(er).length) Object.assign(er, c.chk ? c.chk(v) : {});
+          root
+            .querySelectorAll("[data-e]")
+            .forEach((s) => (s.textContent = er[s.dataset.e] || ""));
+          if (Object.keys(er).length) return;
+          c.fields.forEach((f) => {
+            if (f.t == "number" || f.n) v[f.k] = +v[f.k];
+          });
+          done(v);
+        };
+      }
+      function openF(c, r, ro, after) {
+        const m = modal(
+          `<h3>${ro ? "View" : r ? "Edit" : "Add"} ${c.t}</h3>` +
+            formHTML(c, r, ro),
+          720,
+        );
+        bindF(m, c, (v) => {
+          r
+            ? Object.assign(r, v)
+            : c.src.push({
+                id: Math.max(0, ...c.src.map((x) => x.id)) + 1,
+                ...v,
+              });
+          m.remove();
+          toast("Saved");
+          after && after();
+        });
+      }
+      /* generic CRUD table */
+      function crud(el, c) {
+        const fl = c.filters || [];
+        el.innerHTML = `<div class="bar"><label>Search<input id="q" placeholder="Search…"></label>${fl
+          .map(
+            (f, i) =>
+              `<label>${f[0]}<select data-f="${i}"><option value="">All</option>${f[2]()
+                .map((o) => `<option>${o}</option>`)
+                .join("")}</select></label>`,
+          )
+          .join(
+            "",
+          )}${c.add ? `<button class="btn" id="ad">＋ ${c.add}</button>` : ""}</div><div class="tw"><table><thead><tr>${c.cols.map((x) => `<th>${x[0]}</th>`).join("")}<th>Actions</th></tr></thead><tbody></tbody></table></div><p class="mu" id="ct"></p>`;
+        const tb = el.querySelector("tbody");
+        let rows = [];
+        const draw = () => {
+          const q = el.querySelector("#q").value.toLowerCase(),
+            fv = [...el.querySelectorAll("[data-f]")].map((s) => s.value);
+          rows = c
+            .list()
+            .filter(
+              (r) =>
+                (!q || Object.values(r).join(" ").toLowerCase().includes(q)) &&
+                fl.every((f, i) => !fv[i] || String(f[1](r)) == fv[i]),
+            );
+          tb.innerHTML =
+            rows
+              .map(
+                (r, i) =>
+                  `<tr>${c.cols.map((x) => `<td>${x[1](r)}</td>`).join("")}<td><button class="btn sm gh" data-a="v" data-i="${i}">View</button> <button class="btn sm gh" data-a="e" data-i="${i}">Edit</button> ${(c.xa || []).map((x, j) => `<button class="btn sm gh" data-a="x${j}" data-i="${i}">${x[0](r)}</button>`).join(" ")} <button class="btn sm dn" data-a="d" data-i="${i}">Delete</button></td></tr>`,
+              )
+              .join("") ||
+            '<tr><td colspan="99">No matching records. Try clearing the filters.</td></tr>';
+          el.querySelector("#ct").textContent =
+            `Showing ${rows.length} record(s)`;
+        };
+        el.oninput = draw;
+        if (c.add)
+          el.querySelector("#ad").onclick = () =>
+            c.go ? go(c.go) : openF(c, null, 0, draw);
+        tb.onclick = (e) => {
+          const b = e.target.closest("button");
+          if (!b) return;
+          const r = rows[b.dataset.i],
+            a = b.dataset.a,
+            o = c.src.find((x) => x.id == r.id);
+          if (a == "v") c.view ? modal(c.view(r)) : openF(c, o, 1);
+          else if (a == "e") openF(c, o, 0, draw);
+          else if (a == "d") {
+            const m = modal(
+              '<h3>Delete this record?</h3><p>It will be removed from the prototype data.</p><div class="acts"><button class="btn dn" id="y">Delete</button><button class="btn gh" data-x>Cancel</button></div>',
+              420,
+            );
+            m.querySelector("#y").onclick = () => {
+              c.src.splice(c.src.indexOf(o), 1);
+              m.remove();
+              toast("Deleted");
+              draw();
+            };
+          } else {
+            c.xa[a.slice(1)][1](o);
+            draw();
+          }
+        };
+        draw();
+      }
+      const uq = (f, k) => () => [...new Set(f().map((r) => r[k]))];
+      const RC = {
+        t: "Agricultural Record",
+        src: D.recs,
+        list: scope,
+        add: "Add Record",
+        go: "add",
+        calc: 1,
+        fields: [
+          sel("brgy", "Barangay", bn),
+          sel("farmer", "Farmer", () => D.far.map((f) => f.name)),
+          sel("mo", "Month", MO),
+          sel("yr", "Year", [2026, 2025, 2024], { n: 1 }),
+          sel("cat", "Crop Category", ["Rice", "Corn", "HVC"]),
+          sel("crop", "Specific Crop/Commodity", () =>
+            D.crops.map((c) => c.name),
+          ),
+          txt("vr", "Seed Type/Variety"),
+          sel("eco", "Ecosystem", [
+            "Irrigated",
+            "Rainfed",
+            "Upland",
+            "Lowland",
+          ]),
+          num("pl", "Area Planted (ha)"),
+          num("hv", "Area Harvested (ha)"),
+          num("pr", "Volume of Production"),
+          sel("un", "Production Unit", ["tons", "kg"]),
+          num("pp", "Farmgate Price (₱/kg)"),
+          txt("rm", "Remarks", 0),
+        ],
+        chk: (v) =>
+          +v.hv > +v.pl
+            ? { hv: "Area harvested cannot exceed area planted" }
+            : {},
+        cols: [
+          ["Barangay", (r) => r.brgy],
+          ["Farmer", (r) => r.farmer],
+          ["Month", (r) => r.mo],
+          ["Year", (r) => r.yr],
+          ["Category", (r) => r.cat],
+          ["Crop", (r) => r.crop],
+          ["Variety", (r) => r.vr],
+          ["Ecosystem", (r) => r.eco],
+          ["Planted (ha)", (r) => fmt(r.pl)],
+          ["Farmers", (r) => r.fm],
+          ["Harvested (ha)", (r) => fmt(r.hv)],
+          ["Volume", (r) => fmt(r.pr)],
+          ["Unit", (r) => r.un],
+          ["Price/kg", (r) => peso(r.pp)],
+          ["Yield/ha", (r) => fmt(yl(r))],
+          ["Value", (r) => peso(val(r))],
+          ["Remarks", (r) => r.rm],
+        ],
+        filters: [
+          ["Barangay", (r) => r.brgy, uq(scope, "brgy")],
+          ["Category", (r) => r.cat, uq(scope, "cat")],
+          ["Crop", (r) => r.crop, uq(scope, "crop")],
+          ["Month", (r) => r.mo, () => M6],
+          ["Year", (r) => r.yr, uq(scope, "yr")],
+          ["Ecosystem", (r) => r.eco, uq(scope, "eco")],
+        ],
+      };
+      const FC = {
+        t: "Farmer",
+        src: D.far,
+        list: myFar,
+        add: "Add Farmer",
+        fields: [
+          txt("name", "Farmer Name"),
+          sel("brgy", "Barangay", bn),
+          txt("contact", "Contact Number"),
+          sel("crop", "Crop", [
+            "Palay",
+            "Yellow Corn",
+            "White Corn",
+            "Vegetables",
+            "Fruits",
+            "Root Crops",
+          ]),
+          num("area", "Area Cultivated (ha)"),
+          sel("st", "Status", ["Active", "Inactive"]),
+        ],
+        cols: [
+          ["Farmer ID", (r) => "F-" + String(r.id).padStart(3, "0")],
+          ["Name", (r) => r.name],
+          ["Barangay", (r) => r.brgy],
+          ["Contact", (r) => r.contact],
+          ["Crop", (r) => r.crop],
+          ["Area (ha)", (r) => fmt(r.area)],
+          ["Status", (r) => tag(r.st)],
+        ],
+        filters: [
+          ["Barangay", (r) => r.brgy, uq(myFar, "brgy")],
+          ["Crop", (r) => r.crop, uq(myFar, "crop")],
+          ["Status", (r) => r.st, () => ["Active", "Inactive"]],
+        ],
+      };
+      const tg = (o) => (o.st = o.st == "Active" ? "Inactive" : "Active");
+      FC.view = (r) => {
+        const rs = D.recs.filter((x) => x.farmer == r.name),
+          a = agg(rs);
+        return `<h3>👨‍🌾 ${r.name} <span class="mu" style="font-weight:400">· F-${String(r.id).padStart(3, "0")}</span></h3><p class="mu">Barangay ${r.brgy} · ${r.contact} · Main crop: ${r.crop} · ${r.area} ha · ${tag(r.st)}</p><div class="cards">${kc(
+          [
+            ["🌱", "Area Planted", fmt(a.pl) + " ha"],
+            ["📊", "Production", fmt(a.pr) + " tons"],
+            ["📈", "Average Yield", fmt(a.y) + " t/ha"],
+            [
+              "💰",
+              "Latest Price",
+              rs.length ? peso(rs[rs.length - 1].pp) + "/kg" : "—",
+            ],
+          ],
+        )}</div><h4>Records of ${r.name}</h4><div class="tw" style="max-height:240px"><table><thead><tr><th>Month</th><th>Crop</th><th>Variety</th><th>Planted</th><th>Harvested</th><th>Production (t)</th><th>Yield</th><th>Value</th></tr></thead><tbody>${rs.map((x) => `<tr><td>${x.mo}</td><td>${x.crop}</td><td>${x.vr}</td><td>${fmt(x.pl)}</td><td>${fmt(x.hv)}</td><td>${fmt(tn(x))}</td><td>${fmt(yl(x))}</td><td>${peso(val(x))}</td></tr>`).join("") || '<tr><td colspan="8">No records yet. Add the first record for this farmer.</td></tr>'}</tbody></table></div><div class="acts" style="margin-top:12px"><button class="btn" data-fa="add:${r.id}">＋ Add record</button><button class="btn gh" data-fa="recs:${r.id}">Edit / delete records</button></div>`;
+      };
+      function farmerAct(id, a) {
+        const f = D.far.find((x) => x.id == id);
+        document.querySelector(".mo")?.remove();
+        if (a == "profile") {
+          modal(FC.view(f), 720);
+          return;
+        }
+        if (a == "add") S.pf = f;
+        else S.q = f.name;
+        go(a == "add" ? "add" : "recs");
+      }
+      const CC = {
+        t: "Crop",
+        src: D.crops,
+        list: () => D.crops,
+        add: "Add Crop",
+        fields: [
+          sel("cat", "Category", ["Rice", "Corn", "HVC"]),
+          txt("name", "Crop / Variety Name"),
+          sel("st", "Status", ["Active", "Inactive"]),
+        ],
+        cols: [
+          [
+            "Category",
+            (r) =>
+              r.cat == "HVC"
+                ? "🌱 High-Value Crops"
+                : r.cat == "Rice"
+                  ? "🌾 Rice"
+                  : "🌽 Corn",
+          ],
+          ["Crop / Variety", (r) => r.name],
+          ["Status", (r) => tag(r.st)],
+        ],
+        filters: [
+          ["Category", (r) => r.cat, () => ["Rice", "Corn", "HVC"]],
+          ["Status", (r) => r.st, () => ["Active", "Inactive"]],
+        ],
+        xa: [[(r) => (r.st == "Active" ? "Deactivate" : "Activate"), tg]],
+      };
+      const BC = {
+        t: "Barangay",
+        src: D.brg,
+        add: "Add Barangay",
+        list: () =>
+          D.brg.map((b) => {
+            const a = agg(D.recs.filter((r) => r.brgy == b.name));
+            const fs = D.far.filter((f) => f.brgy == b.name);
+            return {
+              ...b,
+              far: fs.length,
+              fn:
+                fs
+                  .slice(0, 3)
+                  .map((f) => f.name)
+                  .join(", ") +
+                (fs.length > 3 ? " +" + (fs.length - 3) + " more" : ""),
+              all: fs.map((f) => f.name).join(" "),
+              pl: a.pl,
+              hv: a.hv,
+              pr: a.pr,
+            };
+          }),
+        fields: [
+          txt("name", "Barangay Name"),
+          txt("user", "Assigned Barangay User"),
+          sel("st", "Status", ["Active", "Inactive"]),
+        ],
+        cols: [
+          ["Barangay", (r) => r.name],
+          ["Assigned User", (r) => r.user],
+          ["Farmers", (r) => r.far],
+          ["Farmer Names", (r) => r.fn],
+          ["Planted (ha)", (r) => fmt(r.pl)],
+          ["Harvested (ha)", (r) => fmt(r.hv)],
+          ["Production (t)", (r) => fmt(r.pr)],
+          ["Status", (r) => tag(r.st)],
+        ],
+        view: (r) =>
+          `<h3>Barangay ${r.name}</h3><p class="mu">Assigned user: ${r.user} · ${r.st}</p><div class="cards">${kc(
+            [
+              ["👨‍🌾", "Farmers", r.far],
+              ["🌱", "Area Planted", fmt(r.pl) + " ha"],
+              ["🌾", "Area Harvested", fmt(r.hv) + " ha"],
+              ["📊", "Production", fmt(r.pr) + " tons"],
+            ],
+          )}</div><h4>Farmers in ${r.name} (${r.far})</h4><div class="tw" style="max-height:260px"><table><thead><tr><th>ID</th><th>Farmer Name</th><th>Contact</th><th>Crop</th><th>Area (ha)</th><th>Status</th><th></th></tr></thead><tbody>${
+            D.far
+              .filter((f) => f.brgy == r.name)
+              .map(
+                (f) =>
+                  `<tr><td>F-${String(f.id).padStart(3, "0")}</td><td>${f.name}</td><td>${f.contact}</td><td>${f.crop}</td><td>${fmt(f.area)}</td><td>${tag(f.st)}</td><td><button class="btn sm gh" data-fa="profile:${f.id}">Profile</button></td></tr>`,
+              )
+              .join("") || '<tr><td colspan="7">No farmers yet</td></tr>'
+          }</tbody></table></div>`,
+      };
+      const UC = {
+        t: "User",
+        src: D.users,
+        list: () => D.users,
+        add: "Add User",
+        fields: [
+          txt("name", "Full Name"),
+          txt("un", "Username"),
+          sel("role", "Role", ["Admin", "Barangay User"]),
+          sel("brgy", "Assigned Barangay", () => [
+            "—",
+            ...D.brg.map((b) => b.name),
+          ]),
+          sel("st", "Status", ["Active", "Inactive"]),
+        ],
+        chk: (v) =>
+          v.role == "Barangay User" && v.brgy == "—"
+            ? { brgy: "A Barangay User needs an assigned barangay" }
+            : {},
+        cols: [
+          ["Name", (r) => r.name],
+          ["Username", (r) => r.un],
+          ["Role", (r) => r.role],
+          ["Assigned Barangay", (r) => r.brgy],
+          ["Status", (r) => tag(r.st)],
+        ],
+        filters: [
+          ["Role", (r) => r.role, () => ["Admin", "Barangay User"]],
+          ["Status", (r) => r.st, () => ["Active", "Inactive"]],
+        ],
+        xa: [
+          [(r) => (r.st == "Active" ? "Deactivate" : "Activate"), tg],
+          [
+            () => "Reset password",
+            (o) => toast("Temporary password sent to " + o.name),
+          ],
+        ],
+      };
+      /* pages */
+      const P = {},
+        TT = {
+          dash: "Dashboard",
+          recs: "Agricultural Records",
+          add: "Add Agricultural Record",
+          far: "Farmers",
+          mon: "Production Monitoring",
+          rep: "Reports",
+          brgs: "Barangay Management",
+          crops: "Crop Management",
+          users: "User Management",
+          set: "Settings",
+          mine: "My Barangay",
+        };
+      P.dash = (el) => {
+        const rs = scope(),
+          a = agg(rs),
+          ad = S.admin;
+        const k = [
+          ["👨‍🌾", "Total Farmers", fmt(myFar().length)],
+          ...(ad ? [["🏘️", "Total Barangays", D.brg.length]] : []),
+          ["🌱", "Total Area Planted", fmt(a.pl) + " ha"],
+          ["🌾", "Total Area Harvested", fmt(a.hv) + " ha"],
+          ["📊", "Total Production", fmt(a.pr) + " tons"],
+          ["📈", "Average Yield / Ha", fmt(a.y) + " t/ha"],
+          ["💰", "Avg Farmgate Price", peso(a.pp) + "/kg"],
+          ...(ad ? [["🧾", "Est. Production Value", mil(a.val)]] : []),
+        ];
+        const cv = (id, t) =>
+          `<div class="c"><h4>${t}</h4><div class="cw"><canvas id="${id}"></canvas></div></div>`;
+        el.innerHTML =
+          (ad
+            ? ""
+            : `<div class="c" style="margin-bottom:14px"><b>Assigned Barangay: ${S.u.brgy}</b> <span class="mu">— showing only your barangay's data</span></div>`) +
+          `<div class="cards">${kc(k)}</div><div class="gr">${cv("c1", "Production by Crop (tons)")}${cv("c2", ad ? "Production by Barangay (tons)" : "Production by Commodity (tons)")}${cv("c3", "Production Trend (tons)")}${cv("c4", "Farmgate Price Trend (₱/kg)")}</div>`;
+        const cat = by(rs, (r) => r.cat),
+          b2 = by(rs, (r) => (ad ? r.brgy : r.crop)),
+          mo = by(rs, (r) => r.mo);
+        ch(
+          "c1",
+          "doughnut",
+          ["Rice", "Corn", "High-Value Crops"],
+          [
+            {
+              data: [cat.Rice, cat.Corn, cat.HVC].map(Math.round),
+              backgroundColor: G,
+            },
+          ],
+        );
+        ch("c2", "bar", Object.keys(b2), [
+          {
+            label: "Tons",
+            data: Object.values(b2).map(Math.round),
+            backgroundColor: G,
+          },
+        ]);
+        ch("c3", "line", M6, [
+          {
+            label: "Tons",
+            data: M6.map((m) => Math.round(mo[m] || 0)),
+            borderColor: G[0],
+            backgroundColor: "#2e7d3a33",
+            fill: true,
+            tension: 0.3,
+          },
+        ]);
+        ch(
+          "c4",
+          "line",
+          M6,
+          ["Rice", "Corn", "HVC"].map((c, i) => ({
+            label: c,
+            data: M6.map(
+              (m) =>
+                Math.round(
+                  agg(rs.filter((r) => r.cat == c && r.mo == m)).pp * 100,
+                ) / 100,
+            ),
+            borderColor: G[i],
+            backgroundColor: G[i],
+            tension: 0.3,
+          })),
+        );
+      };
+      P.recs = (el) => {
+        crud(el, RC);
+        if (S.q) {
+          el.querySelector("#q").value = S.q;
+          S.q = "";
+          el.oninput();
+        }
+      };
+      P.far = (el) => crud(el, FC);
+      P.crops = (el) => crud(el, CC);
+      P.brgs = (el) => crud(el, BC);
+      P.users = (el) => crud(el, UC);
+      P.add = (el) => {
+        el.innerHTML = `<div class="c" style="max-width:900px"><h3 style="margin-top:0">New Agricultural Record</h3>${formHTML(RC, null, 0)}</div>`;
+        bindF(el, RC, (v) => {
+          D.recs.push({
+            id: Math.max(0, ...D.recs.map((x) => x.id)) + 1,
+            fm: 1,
+            ...v,
+          });
+          toast("Record added");
+          go("recs");
+        });
+        el.querySelector("[data-x]").onclick = () => go("recs");
+        if (S.pf) {
+          const f = S.pf,
+            b = el.querySelector("#fm").elements.brgy;
+          S.pf = null;
+          b.value = f.brgy;
+          b.dispatchEvent(new Event("change", { bubbles: true }));
+          el.querySelector("#fm").elements.farmer.value = f.name;
+        }
+      };
+      P.mon = (el) => {
+        const r0 = scope(),
+          u = (k) => [...new Set(r0.map((r) => r[k]))],
+          F = [
+            ["brgy", "Barangay", u("brgy")],
+            ["crop", "Crop", u("crop")],
+            ["cat", "Crop Category", ["Rice", "Corn", "HVC"]],
+            ["mo", "Month", M6],
+            ["yr", "Year", u("yr")],
+            ["eco", "Ecosystem", u("eco")],
+          ];
+        el.innerHTML = `<div class="bar">${F.map((f) => `<label>${f[1]}<select data-k="${f[0]}"><option value="">All</option>${f[2].map((o) => `<option>${o}</option>`).join("")}</select></label>`).join("")}</div><div class="cards" id="kp"></div><div class="gr"><div class="c"><h4>Production by Month (tons)</h4><div class="cw"><canvas id="m1"></canvas></div></div><div class="c"><h4>Yield per Hectare by Commodity (t/ha)</h4><div class="cw"><canvas id="m2"></canvas></div></div></div>`;
+        const draw = () => {
+          const f = [...el.querySelectorAll("[data-k]")].filter((s) => s.value),
+            rs = r0.filter((r) =>
+              f.every((s) => String(r[s.dataset.k]) == s.value),
+            ),
+            a = agg(rs),
+            mo = by(rs, (r) => r.mo),
+            cr = gp(rs, (r) => r.crop);
+          $("#kp").innerHTML = kc([
+            ["🌱", "Area Planted", fmt(a.pl) + " ha"],
+            ["🌾", "Area Harvested", fmt(a.hv) + " ha"],
+            ["👨‍🌾", "Number of Farmers", fmt(a.fm)],
+            ["📊", "Volume of Production", fmt(a.pr) + " tons"],
+            ["📈", "Yield per Hectare", fmt(a.y) + " t/ha"],
+            ["💰", "Farmgate Price", peso(a.pp) + "/kg"],
+            ["🧾", "Est. Production Value", mil(a.val)],
+          ]);
+          ch("m1", "bar", M6, [
+            {
+              label: "Tons",
+              data: M6.map((m) => Math.round(mo[m] || 0)),
+              backgroundColor: G[0],
+            },
+          ]);
+          ch(
+            "m2",
+            "bar",
+            cr.map((g) => g.r.crop),
+            [
+              {
+                label: "t/ha",
+                data: cr.map((g) => Math.round(g.a.y * 100) / 100),
+                backgroundColor: G,
+              },
+            ],
+          );
+        };
+        el.onchange = draw;
+        draw();
+      };
+      P.rep = (el) => {
+        const T = {
+          prod: [
+            "Production Report",
+            [
+              ["Barangay", (g) => g.r.brgy],
+              ["Crop", (g) => g.r.crop],
+              ["Area Planted (ha)", (g) => fmt(g.a.pl)],
+              ["Area Harvested (ha)", (g) => fmt(g.a.hv)],
+              ["Production (tons)", (g) => fmt(g.a.pr)],
+              ["Yield (t/ha)", (g) => fmt(g.a.y)],
+            ],
+            (r) => r.brgy + r.crop,
+          ],
+          far: [
+            "Farmer Report",
+            [
+              ["Barangay", (g) => g.r.brgy],
+              ["Crop", (g) => g.r.crop],
+              ["Number of Farmers", (g) => fmt(g.a.fm)],
+            ],
+            (r) => r.brgy + r.crop,
+          ],
+          price: [
+            "Farmgate Price Report",
+            [
+              ["Barangay", (g) => g.r.brgy],
+              ["Crop", (g) => g.r.crop],
+              ["Month", (g) => g.r.mo],
+              ["Farmgate Price (₱/kg)", (g) => peso(g.a.pp)],
+            ],
+            (r) => r.brgy + r.crop + r.mo,
+          ],
+          sum: [
+            "Agricultural Summary Report",
+            [
+              ["Barangay", (g) => g.r.brgy],
+              ["Crop", (g) => g.r.crop],
+              ["Farmers", (g) => fmt(g.a.fm)],
+              ["Planted (ha)", (g) => fmt(g.a.pl)],
+              ["Harvested (ha)", (g) => fmt(g.a.hv)],
+              ["Production (t)", (g) => fmt(g.a.pr)],
+              ["Yield (t/ha)", (g) => fmt(g.a.y)],
+              ["Price (₱/kg)", (g) => peso(g.a.pp)],
+              ["Production Value", (g) => peso(g.a.val)],
+            ],
+            (r) => r.brgy + r.crop,
+          ],
+        };
+        el.innerHTML = `<div class="bar no"><label>Report Type<select id="rt">${Object.entries(
+          T,
+        )
+          .map(([k, v]) => `<option value="${k}">${v[0]}</option>`)
+          .join(
+            "",
+          )}</select></label><label>Barangay<select id="rb"><option value="">All</option>${[...new Set(scope().map((r) => r.brgy))].map((b) => `<option>${b}</option>`).join("")}</select></label><button class="btn" id="gn">Generate Report</button><button class="btn gh" id="pt">Print</button><button class="btn gh" id="pd">Export PDF</button></div><div class="c" id="out"></div>`;
+        const gen = () => {
+          const [t, cols, kf] = T[$("#rt").value],
+            b = $("#rb").value,
+            gs = gp(
+              scope().filter((r) => !b || r.brgy == b),
+              kf,
+            );
+          $("#out").innerHTML =
+            `<h3 style="margin-top:0">${t}</h3><p class="mu">Municipal Agriculture Office · ${b || "All barangays"} · Generated ${new Date().toLocaleDateString()}</p><div class="tw"><table><thead><tr>${cols.map((c) => `<th>${c[0]}</th>`).join("")}</tr></thead><tbody>${gs.map((g) => `<tr>${cols.map((c) => `<td>${c[1](g)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+          return 1;
+        };
+        $("#gn").onclick = () => {
+          gen();
+          toast("Report generated");
+        };
+        $("#pt").onclick = () => window.print();
+        $("#pd").onclick = () => {
+          toast('Choose "Save as PDF" in the print dialog');
+          setTimeout(() => window.print(), 600);
+        };
+        gen();
+      };
+      P.set = (el) => {
+        el.innerHTML = `<div class="c" style="max-width:640px"><h3 style="margin-top:0">System Settings</h3><div class="g2"><label>Office Name<input value="Municipal Agriculture Office"></label><label>Default Production Unit<select><option>tons</option><option>kg</option></select></label><label>Reporting Year<select><option>2026</option><option>2025</option></select></label><label>Currency<input value="PHP (₱)" readonly></label></div><p><label style="flex-direction:row;gap:8px;font-weight:400"><input type="checkbox" checked> Require password change every 90 days</label></p><p><label style="flex-direction:row;gap:8px;font-weight:400"><input type="checkbox" checked> Barangay Users can only edit their own barangay</label></p><button class="btn" id="sv">Save Settings</button></div>`;
+        $("#sv").onclick = () => toast("Settings saved");
+      };
+      P.mine = (el) => {
+        const b = D.brg.find((x) => x.name == S.u.brgy),
+          rs = scope(),
+          a = agg(rs),
+          gs = gp(rs, (r) => r.crop);
+        el.innerHTML = `<div class="c" style="margin-bottom:14px"><h3 style="margin:0 0 4px">🏘️ Barangay ${b.name}</h3><span class="mu">Assigned user: ${b.user} · ${b.st}</span></div><div class="cards">${kc(
+          [
+            ["👨‍🌾", "Farmers", myFar().length],
+            ["🌱", "Area Planted", fmt(a.pl) + " ha"],
+            ["🌾", "Area Harvested", fmt(a.hv) + " ha"],
+            ["📊", "Production", fmt(a.pr) + " tons"],
+          ],
+        )}</div><div class="tw"><table><thead><tr><th>Commodity</th><th>Planted (ha)</th><th>Harvested (ha)</th><th>Production (t)</th><th>Yield (t/ha)</th></tr></thead><tbody>${gs.map((g) => `<tr><td>${g.r.crop}</td><td>${fmt(g.a.pl)}</td><td>${fmt(g.a.hv)}</td><td>${fmt(g.a.pr)}</td><td>${fmt(g.a.y)}</td></tr>`).join("")}</tbody></table></div>`;
+      };
+      /* shell */
+      const LG = `<div class="lg"><div class="hero"><div style="font-size:56px">🌾</div><h1 style="margin:0">Agricultural Monitoring &amp; Management Information System</h1><p style="max-width:460px">Record, monitor and report rice, corn and high-value crop production, farmers and farmgate prices for every barangay.</p><div><span class="pill">🌾 Rice</span><span class="pill">🌽 Corn</span><span class="pill">🌱 High-Value Crops</span></div></div><div class="lf"><form id="lf"><h2 style="margin:0;color:var(--p2)">Sign in</h2><label>Username<input id="lu" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><div id="le" class="err"></div><div style="display:flex;justify-content:space-between;font-size:13px"><label style="flex-direction:row;gap:6px;font-weight:400"><input type="checkbox"> Remember me</label><a href="#" id="fp" style="color:var(--pr)">Forgot password?</a></div><button class="btn">Login</button><div class="mu" style="font-size:12px">Demo accounts: admin / admin123 · barangay / barangay123</div></form></div></div>`;
+      const nav = () => [
+        ["dash", "📊", "Dashboard"],
+        [
+          "",
+          "🌾",
+          "Agricultural Records",
+          [
+            ["recs", S.admin ? "All Records" : "My Records"],
+            ["add", "Add Record"],
+          ],
+        ],
+        ["far", "👨‍🌾", "Farmers"],
+        ["mon", "📈", "Production Monitoring"],
+        ["rep", "📄", "Reports"],
+        ...(S.admin
+          ? [
+              ["brgs", "🏘️", "Barangays"],
+              ["crops", "🌱", "Crop Management"],
+              ["users", "👥", "User Management"],
+              ["set", "⚙️", "Settings"],
+            ]
+          : [["mine", "🏘️", "My Barangay"]]),
+      ];
+      function go(p) {
+        S.p = p;
+        render();
+      }
+      function render() {
+        const r = $("#root");
+        if (!S.u) {
+          r.innerHTML = LG;
+          $("#fp").onclick = (e) => {
+            e.preventDefault();
+            const m = modal(
+              '<h3>Reset password</h3><p class="mu">Enter your username and the administrator will send a reset link.</p><label>Username<input></label><br><button class="btn" id="rs">Send request</button>',
+              420,
+            );
+            m.querySelector("#rs").onclick = () => {
+              m.remove();
+              toast("Reset request sent (demo)");
+            };
+          };
+          $("#lf").onsubmit = (e) => {
+            e.preventDefault();
+            const u = $("#lu").value.trim(),
+              p = $("#lp").value;
+            if (u == "admin" && p == "admin123") {
+              S.u = { name: "Elena Mercado", role: "Admin" };
+              S.admin = true;
+            } else if (u == "barangay" && p == "barangay123") {
+              S.u = {
+                name: "Juan Dela Cruz",
+                role: "Barangay User",
+                brgy: "San Jose",
+              };
+              S.admin = false;
+            } else {
+              $("#le").textContent =
+                "Incorrect username or password. Use one of the demo accounts below.";
+              return;
+            }
+            S.p = "dash";
+            render();
+          };
+          return;
+        }
+        Chart.defaults.color =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--mu")
+            .trim() || "#5d7a63";
+        r.innerHTML = `<div class="app"><aside class="side" id="sd"><div class="brand">🌾 Agricultural MIS</div>${nav()
+          .map(
+            (n) =>
+              `<div class="nv ${n[0] ? (S.p == n[0] ? "on" : "") : "hd"}" data-p="${n[0]}">${n[1]} ${n[2]}</div>${(n[3] || []).map((s) => `<div class="nv sub ${S.p == s[0] ? "on" : ""}" data-p="${s[0]}">${s[1]}</div>`).join("")}`,
+          )
+          .join(
+            "",
+          )}<div class="nv" data-p="out">🚪 Logout</div></aside><main><div class="top"><div><button class="btn gh" id="mb">☰</button> <h2>${TT[S.p]}</h2></div><div class="mu">👤 ${S.u.name} · ${S.u.role}${S.u.brgy ? " · " + S.u.brgy : ""}</div></div><div id="pg"></div></main></div>`;
+        $("#mb").onclick = () => $("#sd").classList.toggle("open");
+        $("#sd").onclick = (e) => {
+          const n = e.target.closest("[data-p]");
+          if (!n || n.dataset.p == "") return;
+          if (n.dataset.p == "out") {
+            S.u = null;
+            render();
+          } else go(n.dataset.p);
+        };
+        if (S.p == "recs" && !S.admin) TT.recs = "My Records";
+        P[S.p]($("#pg"));
+      }
+      render();
+    </script>
+  </body>
+</html>
