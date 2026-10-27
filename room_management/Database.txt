@@ -1,0 +1,111 @@
+Create a new database:
+
+Database name: room_management
+Collation: utf8mb4_general_ci
+
+
+-- Create academic_years table
+CREATE TABLE `academic_years` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `year` varchar(50) NOT NULL,
+  `semester` varchar(50) NOT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create rooms table
+CREATE TABLE `rooms` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `year_id` int(11) NOT NULL,
+  `room_number` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `year_id` (`year_id`),
+  FOREIGN KEY (`year_id`) REFERENCES `academic_years`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create students table
+CREATE TABLE `students` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `course` varchar(100) NOT NULL,
+  `year_level` varchar(10) NOT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create room_assignments table
+CREATE TABLE `room_assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `room_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `student_number` int(11) DEFAULT NULL,
+  `assigned_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `room_id` (`room_id`),
+  KEY `student_id` (`student_id`),
+  FOREIGN KEY (`room_id`) REFERENCES `rooms`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create archives table
+CREATE TABLE `archives` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `year_id` int(11) NOT NULL,
+  `archived_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`archived_data`)),
+  `archived_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `year_id` (`year_id`),
+  FOREIGN KEY (`year_id`) REFERENCES `academic_years`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `students` 
+ADD COLUMN `gender` VARCHAR(20) DEFAULT 'N/A' AFTER `year_level`,
+ADD COLUMN `status` ENUM('Active', 'Dropped', 'Graduate') DEFAULT 'Active' AFTER `gender`;
+
+ALTER TABLE `rooms` 
+ADD COLUMN `is_locked` TINYINT(1) DEFAULT 0 AFTER `name`;
+
+-- If starting fresh, use this full schema:
+CREATE TABLE IF NOT EXISTS academic_years (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    year VARCHAR(20) NOT NULL,
+    semester VARCHAR(50) NOT NULL,
+    is_active TINYINT(1) DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS rooms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    year_id INT,
+    room_number INT,
+    name VARCHAR(50),
+    is_locked TINYINT(1) DEFAULT 0,
+    FOREIGN KEY (year_id) REFERENCES academic_years(id)
+);
+
+CREATE TABLE IF NOT EXISTS students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    course VARCHAR(50),
+    year_level VARCHAR(20),
+    gender VARCHAR(20) DEFAULT 'N/A',
+    status ENUM('Active', 'Dropped', 'Graduate') DEFAULT 'Active'
+);
+
+CREATE TABLE IF NOT EXISTS room_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT,
+    student_id INT,
+    student_number INT,
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS archives (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    year_id INT,
+    archived_data LONGTEXT,
+    archived_at DATETIME
+);
