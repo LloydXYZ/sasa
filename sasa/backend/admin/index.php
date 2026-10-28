@@ -529,6 +529,42 @@ function nav($k, $l, $p)
       align-items: center
     }
 
+    .sales {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.6rem
+    }
+
+    .sale {
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.1rem 1.3rem;
+      box-shadow: 0 3px 0 #f0dca0;
+      border-top: 6px solid #f5b700
+    }
+
+    .sale b {
+      display: block;
+      font: 800 1.9rem 'Bricolage Grotesque', sans-serif;
+      color: #8a5a00
+    }
+
+    .sale span {
+      color: #7a6420;
+      font-size: .9rem
+    }
+
+    .sale.big {
+      background: #8a5a00;
+      border-color: #f5b700
+    }
+
+    .sale.big b,
+    .sale.big span {
+      color: #fff
+    }
+
     @media(max-width:820px) {
       body.adm {
         display: block
@@ -578,31 +614,33 @@ function nav($k, $l, $p)
         <div class="stat s1"><b><?= $n("SELECT COUNT(*) FROM reservations WHERE status='pending'") ?></b>Pending requests
         </div>
         <div class="stat s2">
-          <b><?= $n("SELECT COUNT(*) FROM reservations WHERE payment_status='submitted'") ?></b>Payments
-          to verify
+          <b><?= $n("SELECT COUNT(*) FROM reservations WHERE payment_status='submitted'") ?></b>Payments to verify
         </div>
         <div class="stat s3">
           <b><?= $n("SELECT COUNT(*) FROM reservations WHERE reservation_date=CURDATE() AND status IN('pending','approved')") ?></b>Arriving
           today
         </div>
-        <div class="stat s4">
-          <b>₱<?= number_format((float) $n("SELECT COALESCE(SUM(down_payment),0) FROM reservations WHERE payment_status='verified'")) ?></b>Verified
-          payments
-        </div>
       </div>
+      <h3 style="margin:0 0 .8rem;color:#8a5a00">Sales</h3>
+      <div class="sales"><?php $sq = fn($w) => $pdo->query("SELECT COALESCE(SUM(down_payment),0) t,COUNT(*) c FROM reservations WHERE payment_status='verified' $w")->fetch();
+      foreach ([['Today', "AND DATE(paid_at)=CURDATE()", ''], ['Yesterday', "AND DATE(paid_at)=CURDATE()-INTERVAL 1 DAY", ''], ['Last 15 days', "AND DATE(paid_at)>=CURDATE()-INTERVAL 14 DAY", ''], ['Overall sales', '', 'big']] as [$l, $w, $cl]) {
+        $v = $sq($w);
+        echo '<div class="sale ' . $cl . '"><span>' . $l . '</span><b>₱' . number_format((float) $v['t']) . '</b><span>' . $v['c'] . ' verified payment' . ($v['c'] == 1 ? '' : 's') . '</span></div>';
+      } ?></div>
+      <p class="hi" style="margin-top:-.8rem">Sales are the verified payments received, counted on the day each payment
+        was verified.</p>
       <div class="panel">
         <h3>Needs your attention</h3>
-        <table>
-          <?php $q = $pdo->query("$RQ WHERE r.status='pending' OR r.payment_status='submitted' GROUP BY r.id ORDER BY r.created_at DESC LIMIT 6")->fetchAll();
-          foreach ($q as $x): ?>
+        <table><?php $q = $pdo->query("$RQ WHERE r.status='pending' OR r.payment_status='submitted' GROUP BY r.id ORDER BY r.created_at DESC LIMIT 6")->fetchAll();
+        foreach ($q as $x): ?>
             <tr>
               <td><b><?= e($x['name']) ?></b><br><small><?= e($x['cn']) ?></small></td>
               <td><?= date('M j', strtotime($x['reservation_date'])) ?></td>
               <td><span class="pill <?= $x['payment_status'] ?>">payment: <?= $x['payment_status'] ?></span></td>
               <td><a class="b sv" href="?p=res">Review</a></td>
             </tr><?php endforeach;
-          if (!$q)
-            echo '<tr><td>All caught up. Nothing to review.</td></tr>'; ?>
+        if (!$q)
+          echo '<tr><td>All caught up. Nothing to review.</td></tr>'; ?>
         </table>
       </div>
     <?php elseif ($p == 'res'): $f = $_GET['f'] ?? 'all';
@@ -615,10 +653,8 @@ function nav($k, $l, $p)
         }
       } ?>
       <h2>Reservations</h2>
-      <div class="tabs">
-        <?php foreach (['all' => 'All', 'pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected', 'cancelled' => 'Cancelled'] as $k => $l)
-          echo '<a class="' . ($f == $k ? 'on' : '') . '" href="?p=res&f=' . $k . '">' . $l . '</a>'; ?>
-      </div>
+      <div class="tabs"><?php foreach (['all' => 'All', 'pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected', 'cancelled' => 'Cancelled'] as $k => $l)
+        echo '<a class="' . ($f == $k ? 'on' : '') . '" href="?p=res&f=' . $k . '">' . $l . '</a>'; ?></div>
       <div class="panel">
         <table>
           <tr>
@@ -635,10 +671,8 @@ function nav($k, $l, $p)
             $st = $x['status']; ?>
             <tr>
               <td><b>#<?= $x['id'] ?>     <?= e($x['name']) ?></b><br><small><?= e($x['contact_number']) ?> ·
-                  <?= $x['guests'] ?>
-                  guests</small><?php if ($x['special_request'])
-                    echo '<br><small><i>' . e($x['special_request']) . '</i></small>'; ?>
-              </td>
+                  <?= $x['guests'] ?> guests</small><?php if ($x['special_request'])
+                       echo '<br><small><i>' . e($x['special_request']) . '</i></small>'; ?></td>
               <td><?= date('M j, Y', strtotime($x['reservation_date'])) ?><br><small><?= $x['type'] == 'day' ? 'Day use' : 'Overnight' ?>
                   · <?= substr($x['arrival_time'], 0, 5) ?></small></td>
               <td><?= e($x['cn']) ?></td>
@@ -713,12 +747,9 @@ function nav($k, $l, $p)
                   class="pill <?= $x['status'] == 'available' ? 'approved' : 'rejected' ?>"><?= $x['status'] == 'available' ? 'Available' : 'Maintenance' ?></span>
               </h3>
               <div class="pr">₱<?= number_format($x['price']) ?> day · ₱<?= number_format($x['price'] * $m) ?> overnight
-              </div>
-              <small>Up to <?= $x['capacity'] ?> people</small>
-              <div class="tags" style="margin-top:.5rem">
-                <?php foreach (array_filter(array_map('trim', explode(',', $x['amenities']))) as $t)
-                  echo '<span>' . e($t) . '</span>'; ?>
-              </div>
+              </div><small>Up to <?= $x['capacity'] ?> people</small>
+              <div class="tags" style="margin-top:.5rem"><?php foreach (array_filter(array_map('trim', explode(',', $x['amenities']))) as $t)
+                echo '<span>' . e($t) . '</span>'; ?></div>
             </div>
             <details>
               <summary>Edit details</summary>
@@ -745,10 +776,9 @@ function nav($k, $l, $p)
       <h2>Settings</h2>
       <div class="panel">
         <form method="post"><input type="hidden" name="a" value="set">
-          <div class="grid2">
-            <?php foreach (['entrance_fee' => 'Entrance fee (₱ per person)', 'overnight_multiplier' => 'Overnight multiplier (2 = double)', 'contact_number' => 'Contact number', 'email' => 'Email', 'maps_url' => 'Google Maps link', 'ewallet_name' => 'E-wallet name (GCash, Maya…)', 'ewallet_number' => 'E-wallet number', 'ewallet_holder' => 'E-wallet account name'] as $k => $l)
-              echo "<label>$l<input name='$k' value='" . e(setting($k)) . "'></label>"; ?>
-          </div><br><button class="b sv" style="padding:.6rem 1.4rem">Save changes</button>
+          <div class="grid2"><?php foreach (['entrance_fee' => 'Entrance fee (₱ per person)', 'overnight_multiplier' => 'Overnight multiplier (2 = double)', 'contact_number' => 'Contact number', 'email' => 'Email', 'maps_url' => 'Google Maps link', 'ewallet_name' => 'E-wallet name (GCash, Maya…)', 'ewallet_number' => 'E-wallet number', 'ewallet_holder' => 'E-wallet account name'] as $k => $l)
+            echo "<label>$l<input name='$k' value='" . e(setting($k)) . "'></label>"; ?></div><br><button class="b sv"
+            style="padding:.6rem 1.4rem">Save changes</button>
         </form>
       </div><?php endif; ?>
   </main>
